@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ULTRON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#050406;--red:#ff2d2d;--ink:#f2eaea;--mut:#9a8d91;--ln:rgba(255,70,70,.3);--st:rgba(215,195,200,.16);--ok:#7be0a8;--wn:#ffb454;--b:linear-gradient(#ff2d2d,#ff2d2d);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:radial-gradient(75% 46% at 50% 38%,rgba(160,14,20,.34),transparent 72%),radial-gradient(120% 40% at 50% 106%,rgba(120,10,14,.3),transparent 70%),var(--bg);color:var(--ink);font:500 15px/1.4 Rajdhani,"Segoe UI",system-ui,sans-serif;letter-spacing:.02em}
+#app{min-height:100%;display:flex;flex-direction:column}
+.bar{position:relative;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--st)}
+.bar::after{content:"";position:absolute;left:0;bottom:-1px;width:96px;height:2px;background:var(--red);box-shadow:0 0 12px var(--red)}
+.brand{display:flex;gap:10px;align-items:center}
+.mark{width:30px;height:30px;filter:drop-shadow(0 0 6px var(--red))}
+.brand b{display:block;font-size:22px;font-weight:700;letter-spacing:.32em;line-height:1}
+.brand small{display:block;margin-top:4px;font-size:12px;color:var(--mut);letter-spacing:.04em}
+#clock{text-align:right;font-size:22px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+#clock small{display:block;margin-top:4px;font-size:12px;font-weight:500;color:var(--mut)}
+#strip{display:flex;gap:18px;padding:10px 16px 0;font-size:13px;color:var(--mut);white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:var(--mut);vertical-align:middle}
+.dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}.dot.wn{background:var(--wn);box-shadow:0 0 8px var(--wn)}
+#stage{position:relative;flex:1;margin:10px 14px 0;display:grid;place-items:center;background:var(--b) 0 0/20px 2px no-repeat,var(--b) 0 0/2px 20px no-repeat,var(--b) 100% 0/20px 2px no-repeat,var(--b) 100% 0/2px 20px no-repeat,var(--b) 0 100%/20px 2px no-repeat,var(--b) 0 100%/2px 20px no-repeat,var(--b) 100% 100%/20px 2px no-repeat,var(--b) 100% 100%/2px 20px no-repeat}
+#stage::before,#stage::after{content:"";position:absolute;pointer-events:none;opacity:.4}
+#stage::before{left:50%;top:6px;bottom:6px;width:1px;background:linear-gradient(transparent,var(--red),transparent)}
+#stage::after{top:50%;left:6px;right:6px;height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent)}
+.orbwrap{position:relative;z-index:1;width:min(calc(100vw - 44px),48vh,560px);width:min(calc(100vw - 44px),48svh,560px);aspect-ratio:1}
+canvas{width:100%;height:100%;display:block}
+.p{position:relative;padding:14px 16px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--st);border-top-color:rgba(255,130,130,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 32px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.p::before,.p::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--red)}
+.p::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.p::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+#talk{margin:10px 14px 0;min-height:112px}
+.hd{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red)}
+#state{font-size:16px;font-weight:700;letter-spacing:.24em;color:var(--red);text-shadow:0 0 12px rgba(255,45,45,.55)}
+body[data-s=listen] .pulse,body[data-s=speak] .pulse{animation:bl 1s ease-in-out infinite}
+@keyframes bl{50%{opacity:.3}}
+#say{font-size:18px;line-height:1.35;overflow-wrap:anywhere;max-height:5.4em;overflow:auto}
+#txt{width:100%;margin-top:10px;padding:11px 12px;font:inherit;font-size:16px;color:var(--ink);caret-color:var(--red);background:rgba(0,0,0,.35);border:1px solid var(--st);border-radius:2px;outline:0}
+#txt:focus{border-color:var(--red)}#txt::placeholder{color:var(--mut)}
+#dock{display:flex;justify-content:center;align-items:center;gap:36px;padding:18px 16px 14px}
+.ib{width:48px;height:48px;border-radius:50%;border:1px solid var(--st);background:rgba(255,255,255,.05);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+#mic{position:relative;width:78px;height:78px;border-radius:50%;border:2px solid var(--red);background:radial-gradient(circle at 50% 32%,rgba(255,90,90,.5),rgba(30,4,6,.95) 72%);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 0 26px rgba(255,45,45,.4),inset 0 0 14px rgba(255,45,45,.25)}
+#mic::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:1px solid var(--ln)}
+#mic.on{animation:pl 1.2s ease-in-out infinite}
+@keyframes pl{50%{box-shadow:0 0 44px rgba(255,45,45,.9),inset 0 0 14px rgba(255,45,45,.25)}}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+#side{position:fixed;left:0;right:0;bottom:0;z-index:5;max-height:78%;overflow:auto;display:grid;gap:14px;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(8,3,5,.95);border-top:1px solid var(--ln);box-shadow:0 -24px 60px rgba(0,0,0,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);transform:translateY(105%);visibility:hidden;transition:transform .28s ease,visibility 0s .28s}
+#side.open{transform:none;visibility:visible;transition-delay:0s}
+h2{margin:0 0 8px;font-size:15px;font-weight:600;color:var(--mut);letter-spacing:.06em}
+ul,ol{list-style:none;margin:0;padding:0}
+#chips li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--st)}
+#chips li:last-child{border:0}#chips b{font-weight:600;text-align:right}
+.ok{color:var(--ok)}.wn{color:var(--wn)}
+#log{max-height:220px;overflow:auto;font-size:14px}
+#log:empty::before{content:"Henüz etkinlik yok. Konuştuğunda burada görünür.";color:var(--mut)}
+#log li{padding:4px 0}#log time{margin-right:8px;color:var(--mut)}
+@media(min-width:900px){
+#app{display:grid;grid-template-columns:290px minmax(0,1fr) 340px;grid-template-rows:auto auto 1fr auto auto;column-gap:18px;padding:0 18px}
+.bar,#strip{grid-column:1/-1}
+#stage{grid-column:2;grid-row:3;margin:10px 0 0}
+#talk{grid-column:2;grid-row:4;margin:10px 0 0}
+#dock{grid-column:2;grid-row:5}
+#more{display:none}
+#side{display:contents;visibility:visible}
+#sys{grid-column:1;grid-row:3/6;align-self:start;margin-top:10px}
+#logp{grid-column:3;grid-row:3/6;align-self:start;margin-top:10px}
+.orbwrap{width:min(100%,56vh,560px)}
+}
+@media(prefers-reduced-motion:reduce){#mic.on,.pulse{animation:none!important}#side{transition:none}}
+
+.p{background-image:repeating-linear-gradient(90deg,rgba(255,70,70,.55) 0 1px,transparent 1px 7px),linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));background-size:100% 4px,100% 100%;background-repeat:no-repeat}
+#nodes{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:6px;z-index:2}
+#nodes i{width:22px;height:5px;border:1px solid rgba(255,70,70,.5)}
+#nodes i.wait{border-color:#ff4646}
+#nodes i.run{background:rgba(255,45,45,.5);animation:bl .8s ease-in-out infinite}
+#nodes i.done{background:var(--red);border-color:var(--red);box-shadow:0 0 8px var(--red)}
+#nodes i.fail{border-color:var(--wn);background:rgba(255,180,84,.4)}
+#nodes i.skip{opacity:.4}
+.sp{flex:1}
+.sm{font:inherit;font-size:12px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--st);padding:4px 10px;cursor:pointer}
+#conn{border-color:var(--red)}
+#meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#meta:empty{display:none}
+#meta span{font-size:12px;color:var(--mut);border:1px solid var(--st);padding:2px 8px}
+#agl li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-bottom:1px solid var(--st)}
+#agl li:last-child{border:0}
+#agl em{font-style:normal;font-size:11px;color:var(--mut);margin-left:8px;border:1px solid var(--st);padding:0 5px}
+#agl b{font-size:13px;font-weight:600;color:var(--mut)}
+#agl .run b{color:var(--red)}#agl .done b{color:var(--ok)}#agl .fail b{color:var(--wn)}
+#agl p{grid-column:1/-1;margin:0;font-size:13px;line-height:1.3;color:var(--mut)}
+#agl p:empty{display:none}
+#rcol{display:contents}#agp{order:1}#sys{order:2}#logp{order:3}
+@media(min-width:900px){#rcol{display:grid;gap:14px;grid-column:3;grid-row:3/6;align-self:start;margin-top:10px}#agp,#logp{grid-column:auto;grid-row:auto;margin:0}}
+@media(prefers-reduced-motion:reduce){#nodes i.run{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="bar">
+  <div class="brand"><svg class="mark" viewBox="0 0 32 32" fill="none" stroke="#ff2d2d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M16 3a13 13 0 0 1 12 8M29 17a13 13 0 0 1-9 11.5M12 28.5A13 13 0 0 1 4 14"/><circle cx="16" cy="16" r="5" fill="#ff2d2d" stroke="none"/></svg><div><b>ULTRON</b><small>AI control interface</small></div></div>
+  <div id="clock"></div>
+</header>
+<div id="strip"></div>
+<section id="stage"><div class="orbwrap"><canvas id="orb" aria-hidden="true"></canvas></div><div id="nodes" aria-label="Research agents"></div></section>
+<section class="p" id="talk">
+  <div class="hd"><i class="pulse"></i><span id="state">Idle</span><span class="sp"></span><button class="sm" id="lang"></button><button class="sm" id="conn" hidden>Connect AI</button></div>
+  <div id="say" aria-live="polite">Tap the mic or type a question. Nine agents research it, and ULTRON speaks the most reliable answer.</div>
+  <div id="meta"></div>
+  <div id="typebox" hidden><input id="txt" placeholder="Type a question, press Enter" autocomplete="off" aria-label="Type a question"></div>
+</section>
+<nav id="dock">
+  <button class="ib" id="kb" aria-label="Type a question"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
+  <button id="mic" aria-label="Start or stop listening"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <button class="ib" id="more" aria-label="Agents, system and activity" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+</nav>
+<aside id="side">
+  <section class="p" id="sys"><h2>System</h2><ul id="chips"></ul></section>
+  <div id="rcol">
+    <section class="p" id="agp"><h2>Research agents</h2><ol id="agl"></ol></section>
+    <section class="p" id="logp"><h2>Activity</h2><ol id="log"></ol></section>
+  </div>
+</aside>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s),synth=window.speechSynthesis,SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const LBL={idle:'Idle',listen:'Listening',think:'Thinking',speak:'Speaking'},SP={idle:.25,listen:.8,think:3,speak:1};
+const BC={tr:'tr-TR',en:'en-US',de:'de-DE',fr:'fr-FR',es:'es-ES',ar:'ar-SA',ru:'ru-RU'},LG=['auto','tr','en','de','fr','es','ar','ru'];
+const ST={net:['Network'],mic:['Microphone'],ai:['AI link'],tts:['Voice']};
+const AG=[['Recall','quick','State the core facts you are confident about.'],['Context','quick','Give the essential background and definitions.'],['Numbers','quick','Check every number, date and name for plausibility.'],['Practical','quick','Explain what this means in practice for the asker.'],['Recent','default','Say what has changed recently and where your knowledge may be outdated.'],['Sources','default','Say what authoritative sources would state and which claims need checking.'],['Skeptic','default','Look for myths, errors and counter-evidence.'],['Expert','default','Answer as a domain expert would, precisely.'],['Verifier','complex','Answer carefully and flag everything uncertain.']];
+const AS=AG.map(()=>({s:'idle',t:''})),SN={idle:'Standby',wait:'Queued',run:'Researching',done:'Done',fail:'Failed',skip:'Skipped'};
+const calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let state='idle',level=0,target=0,an,buf,spin=0,last=0,rec,stream,actx,heard='',dict=null,sample=null,busy=false,lx=0,det='';
+
+function stat(k,v,c){ST[k][1]=v;ST[k][2]=c;const R=Object.values(ST);$('#chips').innerHTML=R.map(([a,b,c])=>`<li><span>${a}</span><b class="${c||''}">${b||'…'}</b></li>`).join('');$('#strip').innerHTML=R.map(([a,b,c])=>`<span title="${b||''}"><i class="dot ${c||''}"></i>${a}</span>`).join('')}
+function log(m){const e=document.createElement('li'),l=$('#log');e.innerHTML=`<time>${new Date().toLocaleTimeString('en-GB')}</time>`;e.append(m);l.prepend(e);while(l.children.length>40)l.lastChild.remove()}
+const say=t=>{$('#say').textContent=t};
+function mode(s){state=s;document.body.dataset.s=s;$('#state').textContent=LBL[s];$('#mic').classList.toggle('on',s==='listen')}
+function agents(){
+  $('#nodes').innerHTML=AS.map(a=>`<i class="${a.s}"></i>`).join('');
+  $('#agl').innerHTML=AG.map(([n,t],i)=>`<li class="${AS[i].s}"><span>${n}<em>${t}</em></span><b>${SN[AS[i].s]}</b><p></p></li>`).join('');
+  [...$('#agl').children].forEach((e,i)=>{e.lastChild.textContent=AS[i].t.slice(0,120)})
+}
+function net(){stat('net',navigator.onLine?'Online':'Offline',navigator.onLine?'ok':'wn')}
+addEventListener('online',()=>{net();log('Network is back')});addEventListener('offline',()=>{net();log('Network lost')});
+function voices(){if(!synth)return stat('tts','Unavailable','wn');const n=new Set(synth.getVoices().map(v=>v.lang.slice(0,2))).size;stat('tts','Device voice (ElevenLabs off)'+(n?', '+n+' languages':''),'wn')}
+if(synth)synth.onvoiceschanged=voices;
+function langLabel(){$('#lang').textContent='Language: '+(lx?LG[lx].toUpperCase():'Auto')}
+
+async function meter(){
+  try{
+    const m=await navigator.mediaDevices.getUserMedia({audio:true});
+    if(state!=='listen'){m.getTracks().forEach(t=>t.stop());return}
+    stream=m;actx=new(window.AudioContext||window.webkitAudioContext)();an=actx.createAnalyser();an.fftSize=256;buf=new Uint8Array(256);
+    actx.createMediaStreamSource(stream).connect(an);
+  }catch(e){log('Mic level unavailable; the orb follows speech events')}
+}
+function unmeter(){stream&&stream.getTracks().forEach(t=>t.stop());actx&&actx.close();stream=actx=an=null}
+function noMic(c){say('Voice input isn’t available in this view'+(c&&c!=='none'?' ('+c+')':'')+'. Type below; your keyboard’s mic button works too. For the built-in mic, open claude.ai in Chrome.');$('#typebox').hidden=false;$('#txt').focus()}
+function webspeech(){
+  rec=new SR();rec.lang=BC[lx?LG[lx]:det]||(lx?LG[lx]:det)||navigator.language||'en-US';rec.interimResults=true;
+  rec.onstart=()=>{mode('listen');log('Listening ('+rec.lang+')');meter()};
+  rec.onresult=e=>{heard=[...e.results].map(r=>r[0].transcript).join(' ');say(heard);target=Math.max(target,.6)};
+  rec.onerror=e=>{log('Speech error: '+e.error);if(/not-allowed|service/.test(e.error)){stat('mic','Blocked','wn');noMic(e.error)}};
+  rec.onend=()=>{unmeter();const t=heard.trim();heard='';t?run(t,'Heard: '):mode('idle')};
+  try{rec.start()}catch(e){log('Mic start failed: '+e.message);noMic('start')}
+}
+function listen(){
+  if(busy)return;
+  if(state==='listen'){dict?dict.stop():rec&&rec.stop();return}
+  if(synth)synth.cancel();
+  heard='';
+  if(dict){dict.start(lx?{language:LG[lx]}:undefined).catch(e=>{log('Mic: '+e.code);if(e.code!=='stopped'&&e.code!=='dismissed')noMic(e.code)});return}
+  if(SR){webspeech();return}
+  noMic('none');
+}
+
+async function pool(a,n,f){const o=[];let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<a.length){const k=i++;o[k]=await f(a[k],k)}}));return o}
+async function research(q){
+  if(!sample)return{answer:'The AI link isn’t available in this view. Open this page from Claude and allow access.',lang:'en',agree:null};
+  AS.forEach(a=>{a.s='wait';a.t=''});agents();
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),50000);
+  const out=await pool(AG,3,async([n,t,role],i)=>{
+    if(ctl.signal.aborted){AS[i].s='skip';agents();return null}
+    AS[i].s='run';agents();
+    try{
+      const r=await sample(`You are research agent "${n}" on a nine-agent panel answering a user's question. Your job: ${role}\nQUESTION: ${q}\nReply in English, plain text, at most 70 words. Write UNSURE for anything you cannot support.`,{modelTier:t,signal:ctl.signal});
+      AS[i].s='done';AS[i].t=r.text.trim();agents();return[n,AS[i].t];
+    }catch(e){AS[i].s=e.code==='cancelled'?'skip':'fail';AS[i].t=e.code||'';agents();if(e.code==='not_granted')ctl.abort();return null}
+  });
+  clearTimeout(tm);
+  const ok=out.filter(Boolean);
+  if(!ok.length){stat('ai','Not connected','wn');return{answer:'No agent could answer. Allow Claude access when asked, then try again.',lang:'en',agree:null}}
+  stat('ai','Connected','ok');$('#conn').hidden=true;say('Combining '+ok.length+' answers…');
+  try{
+    const s=await sample.json(`You are the core of ULTRON, a personal AI assistant. ${ok.length} research agents answered the same question independently.\nQUESTION: ${q}\n\n`+ok.map(([n,t])=>`[${n}] ${t}`).join('\n')+`\n\nWrite the single most accurate answer. Prefer claims most agents support and say plainly what is uncertain. Write it in the language of the QUESTION, in a spoken style, at most 70 words, no markdown. Reply with only JSON: {"lang":"ISO 639-1 code of the QUESTION language","answer":"...","agree":number of agents whose findings support the answer}`,{modelTier:'default',cache:false});
+    return{answer:String(s.answer),lang:String(s.lang||'en').slice(0,2).toLowerCase(),agree:Math.min(9,+s.agree||0)};
+  }catch(e){return{answer:ok[0][1],lang:'en',agree:null}}
+}
+function meta(r){
+  const el=$('#meta');el.textContent='';let n=r.lang;try{n=new Intl.DisplayNames(['en'],{type:'language'}).of(r.lang)}catch(e){}
+  [['Language',n],['Consensus',r.agree==null?null:r.agree+' of 9']].forEach(([k,v])=>{if(v){const x=document.createElement('span');x.textContent=k+': '+v;el.append(x)}})
+}
+async function run(q,pre){
+  if(busy)return;busy=true;log(pre+q);mode('think');say('Asking nine agents…');$('#meta').textContent='';
+  let r;try{r=await research(q)}catch(e){r={answer:'Something went wrong ('+(e.code||e.message||'unknown')+').',lang:'en',agree:null}}
+  busy=false;meta(r);log('Answer ready'+(r.agree==null?'':', '+r.agree+' of 9 agents agree'));speak(r.answer,r.lang);
+}
+function speak(txt,l){
+  say(txt);det=l;
+  if(!synth){mode('idle');return}
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(txt),v=synth.getVoices().find(x=>x.lang.toLowerCase().startsWith(l));
+  u.lang=BC[l]||l;if(v)u.voice=v;else log('No “'+l+'” voice on this device; using the default');
+  u.rate=.95;u.pitch=.85;
+  u.onstart=()=>mode('speak');u.onboundary=()=>{target=.55+Math.random()*.4};u.onend=u.onerror=()=>mode('idle');
+  synth.speak(u);
+}
+async function connect(){
+  if(!sample){log('AI link unavailable in this view');return}
+  $('#conn').disabled=true;stat('ai','Connecting…','wn');
+  try{await sample('Reply with the single word OK.',{modelTier:'quick',cache:false});stat('ai','Connected','ok');$('#conn').hidden=true;log('AI link connected')}
+  catch(e){stat('ai',e.code==='not_granted'?'Access declined':'Failed ('+e.code+')','wn');log('AI link: '+e.code)}
+  $('#conn').disabled=false;
+}
+async function init(){
+  net();voices();stat('mic','Checking…');stat('ai','Checking…');agents();langLabel();
+  try{if(window.claude)[sample,dict]=await Promise.all([claude.use('sample'),claude.use('dictation')])}catch(e){}
+  stat('ai',sample?'Tap Connect AI':'Unavailable in this view','wn');$('#conn').hidden=!sample;
+  stat('mic',dict?'Platform dictation':SR?'Browser speech':'Typing only',dict||SR?'ok':'wn');
+  if(!dict&&!SR)$('#typebox').hidden=false;
+  if(dict){
+    dict.onPartial(({text})=>{if(text){say(text);target=Math.max(target,.6)}});
+    dict.onFinal(({text})=>{heard+=text});
+    dict.onState(({state:s,reason})=>{
+      if(s==='listening'){mode('listen');log('Listening')}
+      else if(s==='idle'&&state==='listen'){
+        const t=heard.trim();heard='';
+        if(t)run(t,'Heard: ');else{mode('idle');if(reason&&!/stopped|hidden/.test(reason))noMic(reason)}
+      }
+    });
+  }
+}
+const cv=$('#orb'),g=cv.getContext('2d');let W=300;
+function fit(){const d=devicePixelRatio||1;W=cv.getBoundingClientRect().width;cv.width=cv.height=Math.round(W*d);g.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',fit);fit();
+function draw(ts){
+  requestAnimationFrame(draw);
+
+function clock(){const n=new Date();$('#clock').innerHTML=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'<small>'+n.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+'</small>'}
+clock();setInterval(clock,1000);
+$('#mic').onclick=listen;
+$('#txt').onkeydown=e=>{const v=e.target.value.trim();if(e.key==='Enter'&&v&&state!=='listen'&&!busy){e.target.value='';if(synth)synth.cancel();run(v,'Typed: ')}};
+$('#kb').onclick=()=>{const b=$('#typebox');b.hidden=!b.hidden;if(!b.hidden)$('#txt').focus()};
+$('#more').onclick=()=>{const o=$('#side').classList.toggle('open');$('#more').setAttribute('aria-expanded',o)};
+$('#stage').onclick=()=>$('#side').classList.remove('open');
+$('#conn').onclick=connect;
+$('#lang').onclick=()=>{lx=(lx+1)%LG.length;langLabel()};
+init();
+})();
+</script>
+</body>
+</html>
