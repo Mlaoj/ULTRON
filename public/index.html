@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050406">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg">
+<title>ULTRON</title>
+<style>
+:root{color-scheme:dark;--bg:#050406;--red:#ff2d2d;--ink:#f2eaea;--mut:#9a8d91;--ln:rgba(255,70,70,.3);--st:rgba(215,195,200,.14)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(70% 40% at 50% 0%,rgba(160,14,20,.35),transparent 70%),var(--bg);color:var(--ink);font:15px/1.55 ui-sans-serif,system-ui,"Segoe UI",sans-serif;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--st);position:relative}
+header::after{content:"";position:absolute;left:0;bottom:-1px;width:90px;height:2px;background:var(--red);box-shadow:0 0 12px var(--red)}
+#orb{width:34px;height:34px}
+header b{letter-spacing:.34em;font-size:18px}
+header small{display:block;color:var(--mut);font-size:11px;letter-spacing:.06em}
+#clr{margin-left:auto;background:none;border:1px solid var(--st);color:var(--mut);padding:4px 10px;border-radius:6px;font:inherit;font-size:12px}
+main{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+.m{max-width:760px;width:100%;margin:0 auto;padding:12px 14px;border:1px solid var(--st);border-radius:10px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015));overflow-wrap:anywhere;white-space:pre-wrap}
+.m.u{background:rgba(255,45,45,.1);border-color:var(--ln)}
+.m.a{border-top-color:rgba(255,130,130,.35)}
+.m code{background:rgba(0,0,0,.45);padding:1px 5px;border-radius:4px;font-size:13px}
+.m pre{background:rgba(0,0,0,.5);border:1px solid var(--st);padding:10px;border-radius:8px;overflow:auto;margin:8px 0;white-space:pre}
+.m pre code{background:none;padding:0}
+.tr{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;white-space:normal}
+.tr span{font-size:11px;color:var(--mut);border:1px solid var(--st);padding:1px 7px;border-radius:99px}
+.tr span:first-child{color:var(--red);border-color:var(--ln)}
+.think{color:var(--red);letter-spacing:.2em;font-size:13px;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.3}}
+form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--st);background:rgba(8,3,5,.9);max-width:784px;width:100%;margin:0 auto}
+textarea{flex:1;resize:none;max-height:140px;background:rgba(0,0,0,.4);border:1px solid var(--st);border-radius:10px;color:var(--ink);font:inherit;font-size:16px;padding:10px 12px;outline:0;caret-color:var(--red)}
+textarea:focus{border-color:var(--red)}
+button.i{width:44px;height:44px;border-radius:50%;border:1px solid var(--red);background:radial-gradient(circle at 50% 30%,rgba(255,90,90,.45),rgba(30,4,6,.95));color:var(--ink);font-size:18px;cursor:pointer;align-self:flex-end}
+button.i.on{animation:bl .8s infinite}
+@media(prefers-reduced-motion:reduce){.think,button.i.on{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <canvas id="orb" width="68" height="68"></canvas>
+  <div><b>ULTRON</b><small id="st">ÇEKİRDEK HAZIR</small></div>
+  <button id="clr">Temizle</button>
+</header>
+<main id="log"></main>
+<form id="f">
+  <button type="button" class="i" id="mic" aria-label="Konuş">🎙</button>
+  <textarea id="q" rows="1" placeholder="ULTRON'a sor…" aria-label="Mesaj"></textarea>
+  <button class="i" aria-label="Gönder">➤</button>
+</form>
+<script>
+const $=s=>document.querySelector(s),log=$('#log'),q=$('#q');
+let hist=JSON.parse(localStorage.getItem('u_h')||'[]'),busy=false;
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const md=s=>esc(s).replace(/```(\w*)\n?([\s\S]*?)```/g,'<pre><code>$2</code></pre>').replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+function add(role,html,trace){
+  const d=document.createElement('div');d.className='m '+(role==='user'?'u':'a');d.innerHTML=html;
+  if(trace){const t=document.createElement('div');t.className='tr';t.innerHTML=trace.map(x=>`<span>${esc(x.role)} · ${esc(x.model.split('/').pop())} · ${(x.ms/1000).toFixed(1)}s</span>`).join('');d.append(t)}
+  log.append(d);log.scrollTop=log.scrollHeight;return d;
+}
+const save=()=>localStorage.setItem('u_h',JSON.stringify(hist.slice(-30)));
+hist.forEach(m=>add(m.role,m.role==='user'?esc(m.content):md(m.content)));
+async function send(text){
+  if(busy||!text)return;busy=true;$('#st').textContent='DÜŞÜNÜYOR';
+  hist.push({role:'user',content:text});add('user',esc(text));
+  const w=add('assistant','<span class="think">ANALİZ EDİLİYOR…</span>');
+  try{
+    let r=await call();
+    if(r.status===401){const p=prompt('ULTRON PIN');if(p){localStorage.setItem('u_p',p);r=await call()}}
+    const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
+    hist.push({role:'assistant',content:j.answer});save();
+    w.innerHTML=md(j.answer);
+    const tr=j.cached?[{role:'önbellek',model:'cache',ms:0}]:j.trace;
+    const t=document.createElement('div');t.className='tr';t.innerHTML=tr.map(x=>`<span>${esc(x.role)} · ${esc(x.model.split('/').pop())} · ${(x.ms/1000).toFixed(1)}s</span>`).join('');w.append(t);
+    speak(j.answer);
+  }catch(e){w.textContent='Hata: '+e.message;hist.pop()}
+  busy=false;$('#st').textContent='ÇEKİRDEK HAZIR';log.scrollTop=log.scrollHeight;
+}
+const call=()=>fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','x-pin':localStorage.getItem('u_p')||''},body:JSON.stringify({messages:hist})});
+function speak(t){if(!speechSynthesis||!$('#mic').dataset.voice)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[`*#]/g,'').slice(0,600));u.lang='tr-TR';u.pitch=.8;speechSynthesis.speak(u)}
+$('#f').onsubmit=e=>{e.preventDefault();const v=q.value.trim();q.value='';q.style.height='auto';send(v)};
+q.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(min-width:700px)').matches){e.preventDefault();$('#f').requestSubmit()}};
+q.oninput=()=>{q.style.height='auto';q.style.height=Math.min(q.scrollHeight,140)+'px'};
+$('#clr').onclick=()=>{hist=[];save();log.innerHTML=''};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('#mic').onclick=()=>{
+  if(!SR)return alert('Bu tarayıcıda sesli giriş yok, klavye mikrofonunu kullan.');
+  const m=$('#mic'),r=new SR();r.lang='tr-TR';m.classList.add('on');m.dataset.voice='1';
+  r.onresult=e=>{const t=e.results[0][0].transcript;send(t)};r.onend=()=>m.classList.remove('on');r.start();
+};
+// Orb
+const c=$('#orb').getContext('2d');let a=0;
+(function d(){requestAnimationFrame(d);const s=busy?.09:.015;a+=s;c.clearRect(0,0,68,68);c.strokeStyle='#ff2d2d';c.lineWidth=3;c.lineCap='round';
+  for(let i=0;i<3;i++){c.beginPath();c.arc(34,34,26,a+i*2.09,a+i*2.09+1.2);c.stroke()}
+  c.fillStyle='#ff2d2d';c.shadowColor='#ff2d2d';c.shadowBlur=14;c.beginPath();c.arc(34,34,8+(busy?Math.sin(a*8)*2:0),0,7);c.fill();c.shadowBlur=0})();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>
